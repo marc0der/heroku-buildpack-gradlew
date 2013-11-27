@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir>
+
+# fail fast
+set -e
+
+BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
+
+# parse args
+BUILD_DIR=$1
+CACHE_DIR=$2
+
+curl --silent --location http://heroku-jvm-common.s3.amazonaws.com/jvm-buildpack-common.tar.gz | tar xz
+. bin/java
+
+# create default system.properties 
+if [ ! -f ${BUILD_DIR}/system.properties ]; then
+  echo "java.runtime.version=1.8" > ${BUILD_DIR}/system.properties
+fi
+
+# install JDK 
+javaVersion=$(detect_java_version ${BUILD_DIR})
+echo -n "-----> Installing OpenJDK ${javaVersion}... "
+install_java ${BUILD_DIR} ${javaVersion}
+jdk_overlay ${BUILD_DIR}
+echo "done"
+
+if [ ! -d $CACHE_DIR ] ; then
+  mkdir $CACHE_DIR
+fi
+
+BUILDCMD="./gradlew"
+GRADLE_TASK="build"
+
+BUILDCMD="$BUILDCMD $GRADLE_TASK"
+
+cd $BUILD_DIR
+
+# build app
+echo "-----> Building Gradle app..."
+echo "       WARNING: The Gradle buildpack is currently in Beta."
+echo "-----> executing $BUILDCMD"
+
+$BUILDCMD 2>&1 | sed -u 's/^/       /'
+
+if [ "${PIPESTATUS[*]}" != "0 0" ]; then
+  echo " !     Failed to build app"
+  exit 1
+fi
+
+PROFILE_PATH="$BUILD_DIR/.profile.d/gradle.sh"
+mkdir -p $(dirname $PROFILE_PATH)
+echo 'export PATH="/app/.jdk/bin:$PATH"' >> $PROFILE_PATH
