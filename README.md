@@ -1,3 +1,3 @@
-## Spring Boot Buildpack for Heroku
+## Gradlew Buildpack for Heroku
 
-This buildpack can be used to start a Spring Boot application on Heroku.
+This buildpack can be used to run a gradle wrapper on Heroku.
