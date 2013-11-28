@@ -9,6 +9,6 @@ config_vars:
   JAVA_OPTS: -Xmx384m -Xss512k -XX:+UseCompressedOops
 
 default_process_types:
-  web: java -jar build/libs/server.jar
+  web: java -version
 
 EOF
