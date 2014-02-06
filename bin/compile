@@ -30,9 +30,6 @@ if [ ! -d $CACHE_DIR ] ; then
 fi
 
 BUILDCMD="./gradlew"
-GRADLE_TASK="build"
-
-BUILDCMD="$BUILDCMD $GRADLE_TASK"
 
 cd $BUILD_DIR
 
